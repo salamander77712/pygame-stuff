@@ -1,0 +1,129 @@
+#setup
+import pygame
+pygame.init()
+display_width = 1600
+display_height = 900
+gameDisplay = pygame.display.set_mode((display_width, display_height))
+pygame.display.set_caption('Testing')
+
+#functions
+#draw rectangle based on percent of display_height.
+def rect(x,y,w,h,r,g,b):
+    pygame.draw.rect(gameDisplay,(r,g,b),pygame.Rect(x * display_height / 100,y * display_height / 100,w * display_height / 100,h * display_height / 100))
+#classes
+#rectangle physics object
+class PhysRect:
+    def __init__(self,x,y,w,h,r,g,b,elasticity):
+        self.x = x
+        self.y = y
+        self. w = w
+        self.h = h
+        self.r = r
+        self.g = g
+        self.b = b
+        self.elasticity = elasticity
+        self.speedX = 0
+        self. speedY = 0
+        self.accX = 0
+        self.accY = 0
+    def draw(self):
+        rect(self.x,self.y,self.w,self.h,self.r,self.g,self.b)
+    def getHitBox(self):
+        return([self.x * display_height / 100,(self.x + self.w) * display_height / 100,self.y * display_height / 100,(self.y + self.h) * display_height / 100])
+    def moveY(self):
+        self.y += self.speedY
+    def moveX(self):
+        self.x += self.speedX
+    def setSpeedY(self, s):
+        self.speedY = s
+    def setSpeedX(self, s):
+        self.speedX = s
+    def displayHitBox(self):
+        box = self.getHitBox()
+        pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[0],box[2]),pygame.Vector2(box[1],box[3]))
+        pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[0],box[2]),pygame.Vector2(box[0],box[3]))
+        pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[0],box[2]),pygame.Vector2(box[1],box[2]))
+        pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[0],box[3]),pygame.Vector2(box[1],box[3]))
+        pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[0],box[3]),pygame.Vector2(box[1],box[2]))
+        pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[1],box[3]),pygame.Vector2(box[1],box[2]))
+    def checkTL(self, otherRect):
+        otherPoints = otherRect.getHitBox()
+        ownPoints = self.getHitBox()
+        if ownPoints[0] <= otherPoints[1] and ownPoints[0] >= otherPoints[0] and ownPoints[2] <= otherPoints[3] and ownPoints[2] >= otherPoints[2]:
+            return True
+    def checkBL(self, otherRect):
+        otherPoints = otherRect.getHitBox()
+        ownPoints = self.getHitBox()
+        if ownPoints[0] <= otherPoints[1] and ownPoints[0] >= otherPoints[0] and ownPoints[3] <= otherPoints[3] and ownPoints[3] >= otherPoints[2]:
+            return True
+    def checkTR(self, otherRect):
+        otherPoints = otherRect.getHitBox()
+        ownPoints = self.getHitBox()
+        if ownPoints[1] <= otherPoints[1] and ownPoints[1] >= otherPoints[0] and ownPoints[2] <= otherPoints[3] and ownPoints[2] >= otherPoints[2]:
+            return True
+    def checkBR(self, otherRect):
+        otherPoints = otherRect.getHitBox()
+        ownPoints = self.getHitBox()
+        if ownPoints[1] <= otherPoints[1] and ownPoints[1] >= otherPoints[0] and ownPoints[3] <= otherPoints[3] and ownPoints[3] >= otherPoints[2]:
+            return True
+    def handleRectCollisions(self, otherRect):
+        if self.checkTL(otherRect):
+            if self.checkBL(otherRect):
+                self.speedX *= -self.elasticity
+                self.speedY *= self.elasticity
+            if self.checkTR(otherRect):
+                self.speedX *= self.elasticity
+                self.speedY *= -self.elasticity
+        elif self.checkBR(otherRect):
+            if self.checkTR(otherRect):
+                self.speedX *= -self.elasticity
+                self.speedY *= self.elasticity
+            if self.checkBL(otherRect):
+                self.speedX *= self.elasticity
+                self.speedY *= -self.elasticity
+    def handleAccY(self):
+        self.speedY += self.accY
+    def handleAccX(self):
+        self.speedX += self.accX
+    def gravity(self, power):
+        self.accY += power
+    def fullPhys(self, *collisions):
+        self.handleAccY()
+        self.handleAccX()
+        self.moveY()
+        self.moveX()
+        for i in collisions:
+            self.handleRectCollisions(i)
+
+#create objects
+r1 = PhysRect(25,25,12,12,255,0,0,1)
+r1.gravity(0.01)
+r1.setSpeedX(1)
+b1 = PhysRect(0,99,display_width / display_height * 100,1,0,0,255,0)
+b2 = PhysRect(0,0,display_width / display_height * 100,1,0,0,255,0)
+b3 = PhysRect(display_width / display_height * 100 - 1,0,1,100,0,0,255,0)
+b4 = PhysRect(0,0,1,100,0,0,255,0)
+#main loop
+clock = pygame.time.Clock()
+on = True
+while on:
+    for event in pygame.event.get():
+        print(event)
+        if event.type == pygame.QUIT:
+            on = False
+    
+    #Game
+    gameDisplay.fill((0,0,0))
+    r1.draw()
+    b1.draw()
+    b2.draw()
+    b3.draw()
+    b4.draw()
+    r1.displayHitBox()
+    r1.fullPhys(b1,b2,b3,b4)
+    #Game
+    
+    pygame.display.update()
+    clock.tick(60)
+pygame.quit()
+quit()
