@@ -46,39 +46,26 @@ class PhysRect:
         pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[0],box[3]),pygame.Vector2(box[1],box[3]))
         pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[0],box[3]),pygame.Vector2(box[1],box[2]))
         pygame.draw.line(gameDisplay,(255,255,255),pygame.Vector2(box[1],box[3]),pygame.Vector2(box[1],box[2]))
-    def checkTL(self, otherRect):
+    def checkPoint(self,xPos,yPos,otherRect):
         otherPoints = otherRect.getHitBox()
         ownPoints = self.getHitBox()
-        if ownPoints[0] <= otherPoints[1] and ownPoints[0] >= otherPoints[0] and ownPoints[2] <= otherPoints[3] and ownPoints[2] >= otherPoints[2]:
+        if otherPoints[0] <= ownPoints[xPos] <= otherPoints[1] and otherPoints[2] <= ownPoints[yPos] <= otherPoints[3]:
             return True
-    def checkBL(self, otherRect):
-        otherPoints = otherRect.getHitBox()
-        ownPoints = self.getHitBox()
-        if ownPoints[0] <= otherPoints[1] and ownPoints[0] >= otherPoints[0] and ownPoints[3] <= otherPoints[3] and ownPoints[3] >= otherPoints[2]:
-            return True
-    def checkTR(self, otherRect):
-        otherPoints = otherRect.getHitBox()
-        ownPoints = self.getHitBox()
-        if ownPoints[1] <= otherPoints[1] and ownPoints[1] >= otherPoints[0] and ownPoints[2] <= otherPoints[3] and ownPoints[2] >= otherPoints[2]:
-            return True
-    def checkBR(self, otherRect):
-        otherPoints = otherRect.getHitBox()
-        ownPoints = self.getHitBox()
-        if ownPoints[1] <= otherPoints[1] and ownPoints[1] >= otherPoints[0] and ownPoints[3] <= otherPoints[3] and ownPoints[3] >= otherPoints[2]:
-            return True
+        else:
+            return False
     def handleRectCollisions(self, otherRect):
-        if self.checkTL(otherRect):
-            if self.checkBL(otherRect):
+        if self.checkPoint(0,2,otherRect):
+            if self.checkPoint(0,3,otherRect):
                 self.speedX *= -self.elasticity
                 self.speedY *= self.elasticity
-            if self.checkTR(otherRect):
+            if self.checkPoint(1,2,otherRect):
                 self.speedX *= self.elasticity
                 self.speedY *= -self.elasticity
-        elif self.checkBR(otherRect):
-            if self.checkTR(otherRect):
+        elif self.checkPoint(1,3,otherRect):
+            if self.checkPoint(1,2,otherRect):
                 self.speedX *= -self.elasticity
                 self.speedY *= self.elasticity
-            if self.checkBL(otherRect):
+            if self.checkPoint(0,3,otherRect):
                 self.speedX *= self.elasticity
                 self.speedY *= -self.elasticity
     def handleAccY(self):
